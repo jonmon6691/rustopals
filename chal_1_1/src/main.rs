@@ -1,4 +1,5 @@
 use base64::Engine;
+use itertools::Itertools;
 
 fn main() {
     easy_mode();
@@ -21,10 +22,16 @@ fn hard_mode() {
 
 fn hex_decode(data: &str) -> Result<Vec<u8>, hex::FromHexError>
 {
-    Ok(vec![1])
+    let str_iter = data.chars();
+    let mut out: Vec<u8> = vec![];
+    for (hi, low) in str_iter.tuples() {
+        let num = hi.to_digit(16).unwrap() * 16 + low.to_digit(16).unwrap();
+        out.push(num as u8);
+    }
+    Ok(out)
 }
 
 fn base64_encode(data: Vec<u8>) -> String
 {
-    "Hard mode isn't done yet".to_string()
+    String::from_utf8(data).unwrap()
 }

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 hex = "0.4"
 base64 = "0.21"
+itertools = "0.12"
