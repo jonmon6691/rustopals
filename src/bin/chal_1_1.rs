@@ -1,6 +1,8 @@
 use base64::Engine;
 
 fn main() {
+    println!("https://cryptopals.com/sets/1/challenges/1 - Convert hex to base64");
+    
     easy_mode();
     hard_mode();
 }
