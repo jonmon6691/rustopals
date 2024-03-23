@@ -11,6 +11,15 @@ pub fn hex_decode(data: &str) -> Result<Vec<u8>, hex::FromHexError>
     Ok(out)
 }
 
+pub fn hex_encode(data: Vec<u8>) -> String
+{
+    let mut out = String::new();
+    for c in data {
+        out.extend(format!("{:02x}", c).chars());
+    }
+    out
+}
+
 const STRBASE64:&'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 pub fn base64_encode(data: Vec<u8>) -> String
