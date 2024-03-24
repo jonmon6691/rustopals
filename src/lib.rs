@@ -32,17 +32,47 @@ static B64: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
     '7', '8', '9', '+', '/'];
 
 /// Converts `data` into a `String` containing the base64 representation of the
-/// raw data. Note this function does not pad the end of the returned string.
+/// raw data.
 pub fn base64_encode(data: Vec<u8>) -> String {
-    data.into_iter().tuples()
-        .map(|(one, two, three)| {
-            vec![
-                B64[(one >> 2) as usize],
-                B64[((one & 0x3) << 4 | two >> 4) as usize],
-                B64[((two & 0xf) << 2 | three >> 6) as usize],
-                B64[(three & 0x3f) as usize],
-            ]
-        }).concat().into_iter().collect()
+    data.into_iter().triples().map(|(a, b, c)| {
+        vec![
+            B64[(a >> 2) as usize],
+            B64[((a & 0x3) << 4 | b.unwrap_or(0) >> 4) as usize],
+            b.map_or('=', |x| B64[((x & 0xf) << 2 | c.unwrap_or(0) >> 6) as usize]),
+            c.map_or('=', |x| B64[(x & 0x3f) as usize])]
+    }).concat().into_iter().collect()
+}
+
+/// Define all iterators as having an implementation of TriplesIterator
+/// This is known as an "iterater adapter" and is what lets allows triples()
+/// to be called as a method of all existing iterators
+impl <I: Iterator> TriplesIterator for I {}
+trait TriplesIterator: Iterator {
+    fn triples(self) -> Triples<Self> where Self: Sized { Triples { iter: self } }
+}
+
+/// Triples iterator returns three `Option<u8>`'s of the iterator at a time.
+/// Including a final pass with any remaining elements passed as normal, and
+/// None values for the remaining portion.
+/// 
+/// # Example
+/// ```rust
+/// let a: Vec<u8> = vec![1, 2, 3, 4, 5];
+/// let a = a.into_iter().triples();
+/// 
+/// assert_eq!(Some((1, Some(2), Some(3))), a.next());
+/// assert_eq!(Some((4, Some(5), None)), a.next());
+/// assert_eq!(None, a.next());
+/// ```
+struct Triples<I> { iter: I }
+impl <I: Iterator<Item = u8>> Iterator for Triples<I> {
+    type Item = (u8, Option<u8>, Option<u8>);
+    fn next(&mut self) -> Option<Self::Item> {
+        match (self.iter.next(), self.iter.next(), self.iter.next()) {
+            (None, _, _) => None,
+            (Some(first), second, third) => Some((first, second, third))
+        }
+    }
 }
 
 // Mapping from utf8 codepoint to character frequency score.
