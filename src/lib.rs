@@ -56,9 +56,8 @@ trait TriplesIterator: Iterator {
 /// None values for the remaining portion.
 /// 
 /// # Example
-/// ```rust
-/// let a: Vec<u8> = vec![1, 2, 3, 4, 5];
-/// let a = a.into_iter().triples();
+/// ```ignore
+/// let a: Vec<u8> = vec![1, 2, 3, 4, 5].into_iter().triples();
 /// 
 /// assert_eq!(Some((1, Some(2), Some(3))), a.next());
 /// assert_eq!(Some((4, Some(5), None)), a.next());

@@ -18,3 +18,15 @@ fn main() {
     println!("Key: dec:{} hex:{:x} ascii:{}", ice.key, ice.key, ice.key as char);
     println!("{}", ice.to_string());
 }
+
+#[test]
+fn chal_1_4() {
+    let ice = ureq::get("https://cryptopals.com/static/challenge-data/4.txt")
+        .call().unwrap()
+        .into_string().unwrap().split('\n')
+        .map(|line| rustopals::hex_decode(line))
+        .map(|ct| rustopals::SBX::from_ciphertext(&ct))
+        .sorted_by_key(|trial| trial.score)
+        .rev().next().unwrap();
+    assert_eq!(ice.key, !202); // Obfuscated ;)
+}
