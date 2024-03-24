@@ -47,12 +47,17 @@ impl SBX {
     }
 }
 
-struct Triples<I> {
-    iter: I,
+trait TriplesIterator: Iterator {
+    fn triples(self) -> Triples<Self> where Self: Sized { Triples { iter: self } }
 }
+
+impl <I: Iterator> TriplesIterator for I {}
+
+struct Triples<I> { iter: I }
 
 impl <I: Iterator<Item = u8>> Iterator for Triples<I> {
     type Item = (u8, Option<u8>, Option<u8>);
+    
     fn next(&mut self) -> Option<Self::Item> {
         match (self.iter.next(), self.iter.next(), self.iter.next()) {
             (None, _, _) => None,
@@ -61,8 +66,3 @@ impl <I: Iterator<Item = u8>> Iterator for Triples<I> {
     }
 }
 
-trait TriplesIterator: Iterator {
-    fn triples(self) -> Triples<Self> where Self: Sized { Triples { iter: self } }
-}
-
-impl <I: Iterator> TriplesIterator for I {}
