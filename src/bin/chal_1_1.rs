@@ -16,7 +16,7 @@ fn easy_mode() {
 
 fn hard_mode() {
     let input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
-    let input_bytes = rustopals::hex_decode(input).unwrap();
+    let input_bytes = rustopals::hex_decode(input);
     let output = rustopals::base64_encode(input_bytes);
     println!("{output}");
 }

@@ -1,8 +1,8 @@
 fn main() {
     println!("https://cryptopals.com/sets/1/challenges/2 - Fixed XOR");
 
-    let input_bytes = rustopals::hex_decode("1c0111001f010100061a024b53535009181c").unwrap();
-    let key_bytes = rustopals::hex_decode("686974207468652062756c6c277320657965").unwrap();
+    let input_bytes = rustopals::hex_decode("1c0111001f010100061a024b53535009181c");
+    let key_bytes = rustopals::hex_decode("686974207468652062756c6c277320657965");
     let key_str = String::from_utf8(key_bytes.clone()).unwrap();
     println!("Key: '{key_str}'");
 

@@ -1,13 +1,19 @@
 use itertools::Itertools;
 
-pub fn hex_decode(data: &str) -> Result<Vec<u8>, hex::FromHexError>
-{
-    let mut out: Vec<u8> = Vec::with_capacity(data.len()/2);
-    for (hi, low) in data.chars().tuples() {
-        let num = hi.to_digit(16).unwrap() * 16 + low.to_digit(16).unwrap();
-        out.push(num as u8);
-    }
-    Ok(out)
+/// Loops through `data` and returns a `u8` for each consecutive pair of `char`'s
+/// interpreted as a hexidecimal byte. This is the inverse of `hex_encode`
+/// 
+/// If the input length is odd, then the trailing nibble is ignored and no `u8`
+/// is emitted for it.
+/// 
+/// # Panics
+/// Panics if a character in `data` is not valid hex
+pub fn hex_decode(data: &str) -> Vec<u8> {
+    data.chars().tuples()
+        .map(|(hi, low)|
+            (hi.to_digit(16).unwrap() * 16 +
+            low.to_digit(16).unwrap()) as u8
+        ).collect()
 }
 
 pub fn hex_encode(data: Vec<u8>) -> String
