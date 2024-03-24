@@ -25,23 +25,24 @@ pub fn hex_encode(data: Vec<u8>) -> String {
 }
 
 /// Base64 character lookup table
-const STRBASE64:&'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static B64: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+    'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a',
+    'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+    'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
+    '7', '8', '9', '+', '/'];
 
 /// Converts `data` into a `String` containing the base64 representation of the
 /// raw data. Note this function does not pad the end of the returned string.
 pub fn base64_encode(data: Vec<u8>) -> String {
-    let mut out: Vec<char> = Vec::with_capacity(data.len());
-    for (one, two, three) in data.iter().tuples() {
-        let cp_one = one >> 2;
-        let cp_two = ((one & 0x3) << 4) | (two >> 4);
-        let cp_three = ((two & 0xf) << 2) | (three >> 6);
-        let cp_four = three & 0x3f;
-        out.push(STRBASE64.chars().nth(cp_one as usize).unwrap());
-        out.push(STRBASE64.chars().nth(cp_two as usize).unwrap());
-        out.push(STRBASE64.chars().nth(cp_three as usize).unwrap());
-        out.push(STRBASE64.chars().nth(cp_four as usize).unwrap());
-    }
-    out.iter().collect()
+    data.into_iter().tuples()
+        .map(|(one, two, three)| {
+            vec![
+                B64[(one >> 2) as usize],
+                B64[((one & 0x3) << 4 | two >> 4) as usize],
+                B64[((two & 0xf) << 2 | three >> 6) as usize],
+                B64[(three & 0x3f) as usize],
+            ]
+        }).concat().into_iter().collect()
 }
 
 // Mapping from utf8 codepoint to character frequency score.
