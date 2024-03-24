@@ -8,25 +8,14 @@ pub fn hex_encode(data: Vec<u8>) -> String {
     data.iter().map(|b| format!("{:02x}", b)).collect::<String>()
 }
 
-const STRBASE64:&'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static STRBASE64: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'];
 
 pub fn base64_encode(data: Vec<u8>) -> String {
-    let mut chunker = data.iter().tuples();
-    let b64: Vec<char> = chunker.by_ref().map(|i: (&u8, &u8, &u8)| b64_try_encode((Some(i.0), Some(i.1), Some(i.2)))).concat().into_iter().collect();
-    let mut remainder = chunker.into_buffer();
-    return b64.iter().chain(b64_try_encode((0..3).map(|_| -> Option<&u8> {remainder.next().or(None)}).collect_tuple().unwrap()).iter()).collect()
+    data.into_iter().triples().map(|x| b64_chunk(x)).concat().into_iter().collect()
 }
 
-fn b64_try_encode(input: (Option<&u8>, Option<&u8>, Option<&u8>)) -> Vec<char> {
-    let n1 = match input.0 {Some(x) => *x, None => return vec![]};
-    let n2 = input.1.map_or(None, |x| Some(*x));
-    let n3 = input.2.map_or(None, |x| Some(*x));
-    vec![
-        STRBASE64.chars().nth((n1 >> 2) as usize).unwrap(),
-        STRBASE64.chars().nth((((n1 & 0x3) << 4) | (n2.unwrap_or(0) >> 4)) as usize).unwrap(),
-        n2.map_or('=', |x| STRBASE64.chars().nth((((x & 0xf) << 2) | (n3.unwrap_or(0) >> 6)) as usize).unwrap()),
-        n3.map_or('=', |x| STRBASE64.chars().nth((x & 0x3f) as usize).unwrap()),
-    ]
+fn b64_chunk(i: (u8, Option<u8>, Option<u8>)) -> Vec<char> {
+    vec![STRBASE64[(i.0 >> 2) as usize], STRBASE64[(((i.0 & 0x3) << 4) | (i.1.unwrap_or(0) >> 4)) as usize], i.1.map_or('=', |x| STRBASE64[(((x & 0xf) << 2) | (i.2.unwrap_or(0) >> 6)) as usize]), i.2.map_or('=', |x| STRBASE64[(x & 0x3f) as usize])]
 }
 
 static SCORES_EN_US: [usize; 256] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29070, 0, 0, 10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 277618, 4417, 3303, 3777, 59, 77, 210, 10975, 1224, 1146, 3944, 269, 12436, 4318, 23840, 655, 1201, 2795, 2204, 463, 341, 437, 284, 202, 295, 417, 14400, 314, 108, 101, 315, 4743, 61, 5597, 3547, 4570, 3489, 3478, 3140, 5467, 3455, 11644, 1370, 916, 3654, 3785, 3650, 3237, 2913, 419, 4004, 5650, 6461, 1999, 858, 4721, 333, 3129, 173, 1305, 30, 1300, 3, 152, 12, 93396, 21681, 32506, 45379, 138374, 21620, 30871, 54799, 84862, 1719, 19336, 57855, 29504, 87914, 107507, 23718, 929, 72815, 74159, 103030, 41444, 10078, 26158, 4687, 29411, 1789, 8, 59, 4, 13, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 5, 5, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 5,0, 2, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2,0, 0, 0];
@@ -55,3 +44,23 @@ impl SBX {
         format!("Plaintext: {}", String::from_utf8(self.plaintext.clone()).unwrap_or("Failure: [Error Decoding UTF-8]".to_string()))
     }
 }
+
+struct Triples<I> {
+    iter: I,
+}
+
+impl <I: Iterator<Item = u8>> Iterator for Triples<I> {
+    type Item = (u8, Option<u8>, Option<u8>);
+    fn next(&mut self) -> Option<Self::Item> {
+        match (self.iter.next(), self.iter.next(), self.iter.next()) {
+            (None, _, _) => None,
+            (Some(first), second, third) => Some((first, second, third))
+        }
+    }
+}
+
+trait TriplesIterator: Iterator {
+    fn triples(self) -> Triples<Self> where Self: Sized { Triples { iter: self } }
+}
+
+impl <I: Iterator> TriplesIterator for I {}
