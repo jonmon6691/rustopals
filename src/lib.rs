@@ -40,7 +40,7 @@ pub fn base64_encode(data: Vec<u8>) -> String {
             B64[((a & 0x3) << 4 | b.unwrap_or(0) >> 4) as usize],
             b.map_or('=', |x| B64[((x & 0xf) << 2 | c.unwrap_or(0) >> 6) as usize]),
             c.map_or('=', |x| B64[(x & 0x3f) as usize])]
-    }).concat().into_iter().collect()
+    }).flatten().collect()
 }
 
 /// Define all iterators as having an implementation of TriplesIterator
