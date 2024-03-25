@@ -19,9 +19,9 @@ pub fn hex_decode(data: &str) -> Vec<u8> {
 /// Converts the given `data` into a String hexidecimal representation. This is
 /// the inverse function of `hex_decode`.
 pub fn hex_encode(data: Vec<u8>) -> String {
-    return data.iter()
+    data.iter()
         .map(|b| format!("{:02x}", b))
-        .collect::<String>();
+        .collect::<String>()
 }
 
 /// Base64 character lookup table
@@ -44,7 +44,7 @@ pub fn base64_encode(data: Vec<u8>) -> String {
 }
 
 /// Define all iterators as having an implementation of TriplesIterator
-/// This is known as an "iterater adapter" and is what lets allows triples()
+/// This is known as an "iterator adapter" and is what lets allows triples()
 /// to be called as a method of all existing iterators
 impl <I: Iterator> TriplesIterator for I {}
 trait TriplesIterator: Iterator {
@@ -94,9 +94,9 @@ static SCORES_EN_US: [usize; 256] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29070, 0, 0,
 
 /// Returns the average score per character of a raw string
 fn score_text(text: &Vec<u8>) -> usize {
-    return text.iter()
+    text.iter()
         .map(|x| {SCORES_EN_US[*x as usize]})
-        .sum::<usize>() / text.len();
+        .sum::<usize>() / text.len()
 }
 
 /// A message decrypted using the held `key` byte and with a `score` relating to
@@ -121,9 +121,9 @@ impl SBX {
 
     /// Returns a new SBX which has the highest `score` out of all possible `key`'s
     pub fn from_ciphertext(ciphertext: &Vec<u8>) -> SBX {
-        return (0..=255).map(|key| SBX::new(key, ciphertext))
+        (0..=255).map(|key| SBX::new(key, ciphertext))
             .sorted_by_key(|trial| trial.score) // Sort by score
-            .rev().next().unwrap(); // Return the tuple with the highest score
+            .rev().next().unwrap() // Return the tuple with the highest score
     }
 
     /// Attempt to convert the decrypted message to a `String` otherwise return a `String`
