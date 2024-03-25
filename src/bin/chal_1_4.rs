@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use rustopals::EverythingRemainsRaw;
 use ureq;
 
 fn main() {
@@ -9,7 +10,7 @@ fn main() {
     let ice = ureq::get("https://cryptopals.com/static/challenge-data/4.txt")
         .call().unwrap()
         .into_string().unwrap().split('\n')
-        .map(|line| rustopals::hex_decode(line))
+        .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))
         .sorted_by_key(|trial| trial.score)
         .rev().next().unwrap();
@@ -24,7 +25,7 @@ fn chal_1_4() {
     let ice = ureq::get("https://cryptopals.com/static/challenge-data/4.txt")
         .call().unwrap()
         .into_string().unwrap().split('\n')
-        .map(|line| rustopals::hex_decode(line))
+        .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))
         .sorted_by_key(|trial| trial.score)
         .rev().next().unwrap();

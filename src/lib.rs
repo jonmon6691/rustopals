@@ -1,29 +1,5 @@
 use itertools::Itertools;
 
-/// Loops through `data` and returns a `u8` for each consecutive pair of `char`'s
-/// interpreted as a hexidecimal byte. This is the inverse of `hex_encode`
-/// 
-/// If the input length is odd, then the trailing nibble is ignored and no `u8`
-/// is emitted for it.
-/// 
-/// # Panics
-/// Panics if a character in `data` is not valid hex
-pub fn hex_decode(data: &str) -> Vec<u8> {
-    data.chars().tuples()
-        .map(|(hi, low)|
-            (hi.to_digit(16).unwrap() * 16 +
-            low.to_digit(16).unwrap()) as u8
-        ).collect()
-}
-
-/// Converts the given `data` into a String hexidecimal representation. This is
-/// the inverse function of `hex_decode`.
-pub fn hex_encode(data: Vec<u8>) -> String {
-    data.iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<String>()
-}
-
 /// Base64 character lookup table
 static B64: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
     'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a',
@@ -31,16 +7,48 @@ static B64: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
     'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
     '7', '8', '9', '+', '/'];
 
-/// Converts `data` into a `String` containing the base64 representation of the
-/// raw data.
-pub fn base64_encode(data: Vec<u8>) -> String {
-    data.into_iter().triples().map(|(a, b, c)| {
-        vec![
-            B64[(a >> 2) as usize],
-            B64[((a & 0x3) << 4 | b.unwrap_or(0) >> 4) as usize],
-            b.map_or('=', |x| B64[((x & 0xf) << 2 | c.unwrap_or(0) >> 6) as usize]),
-            c.map_or('=', |x| B64[(x & 0x3f) as usize])]
-    }).flatten().collect()
+pub trait EverythingRemainsRaw {
+    fn from_hex(data: &str) -> Vec<u8>;
+    fn into_hex(self) -> String;
+    fn into_base64(self) -> String;
+}
+
+impl EverythingRemainsRaw for Vec<u8> {
+    /// Loops through `data` and returns a `u8` for each consecutive pair of `char`'s
+    /// interpreted as a hexadecimal byte. This is the inverse of `hex_encode`
+    /// 
+    /// If the input length is odd, then the trailing nibble is ignored and no `u8`
+    /// is emitted for it.
+    /// 
+    /// # Panics
+    /// Panics if a character in `data` is not valid hex
+    fn from_hex(data: &str) -> Vec<u8> {
+        data.chars().tuples()
+            .map(|(hi, low)|
+                (hi.to_digit(16).unwrap() * 16 +
+                low.to_digit(16).unwrap()) as u8
+            ).collect()
+    }
+
+    /// Converts the given `data` into a String hexadecimal representation. This is
+    /// the inverse function of `hex_decode`.
+    fn into_hex(self) -> String {
+        self.iter()
+            .map(|b| format!("{:02x}", b))
+            .collect()
+    }
+
+    /// Converts `data` into a `String` containing the base64 representation of the
+    /// raw data.
+    fn into_base64(self) -> String {
+        self.into_iter().triples().map(|(a, b, c)| {
+            vec![
+                B64[(a >> 2) as usize],
+                B64[((a & 0x3) << 4 | b.unwrap_or(0) >> 4) as usize],
+                b.map_or('=', |x| B64[((x & 0xf) << 2 | c.unwrap_or(0) >> 6) as usize]),
+                c.map_or('=', |x| B64[(x & 0x3f) as usize])]
+        }).flatten().collect()
+    }
 }
 
 /// Define all iterators as having an implementation of TriplesIterator

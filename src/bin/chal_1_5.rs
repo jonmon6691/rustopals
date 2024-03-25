@@ -1,3 +1,5 @@
+use rustopals::EverythingRemainsRaw;
+
 fn main() {
     println!("https://cryptopals.com/sets/1/challenges/5 - Implement repeating-key XOR");
 
@@ -10,7 +12,7 @@ fn main() {
         .map(|(a, b)| a ^ b)
         .collect();
 
-    let ct: String = rustopals::hex_encode(ct);
+    let ct: String = ct.into_hex();
     
     println!("Got: {}", ct)
 }
@@ -26,7 +28,7 @@ fn chal_1_5() {
         .map(|(a, b)| a ^ b)
         .collect();
 
-    let ct: String = rustopals::hex_encode(ct);
+    let ct: String = ct.into_hex();
     let ct_expected = String::from("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
     
     assert_eq!(ct, ct_expected);
