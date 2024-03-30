@@ -1,3 +1,5 @@
+use std::iter::zip;
+
 use itertools::Itertools;
 
 /// Base64 character lookup table
@@ -11,6 +13,7 @@ pub trait EverythingRemainsRaw {
     fn from_hex(data: &str) -> Vec<u8>;
     fn into_hex(self) -> String;
     fn into_base64(self) -> String;
+    fn from_base64(data: &str) -> Vec<u8>;
 }
 
 impl EverythingRemainsRaw for Vec<u8> {
@@ -49,6 +52,10 @@ impl EverythingRemainsRaw for Vec<u8> {
                 c.map_or('=', |x| B64[(x & 0x3f) as usize])]
         }).flatten().collect()
     }
+
+    fn from_base64(data: &str) -> Vec<u8> {
+        vec![1, 2, 3]
+    }
 }
 
 /// Define all iterators as having an implementation of TriplesIterator
@@ -80,6 +87,23 @@ impl <I: Iterator<Item = u8>> Iterator for Triples<I> {
             (Some(first), second, third) => Some((first, second, third))
         }
     }
+}
+
+/// Calculates the Hamming Distance between two raw strings
+fn hamming(a: &Vec<u8>, b: &Vec<u8>) -> usize {
+    zip(a, b)
+        .map(|(aa, bb)| aa ^ bb)
+        .map(|x| 
+            (0..8).map(|i| if x & (1 << i) > 0 {1} else {0}).sum::<usize>())
+        .sum()
+}
+
+#[test]
+fn unmistakable_hamming() {
+    let a = Vec::from("this is a test".as_bytes());
+    let b = Vec::from("wokka wokka!!!".as_bytes());
+    let hd = hamming(&a, &b);
+    assert_eq!(hd, 37);
 }
 
 // Mapping from utf8 codepoint to character frequency score.
