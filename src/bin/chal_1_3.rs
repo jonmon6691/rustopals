@@ -1,4 +1,4 @@
-use rustopals::EverythingRemainsRaw;
+use rustopals::raw::EverythingRemainsRaw;
 
 fn main() {
     println!("https://cryptopals.com/sets/1/challenges/3 - Single-byte XOR cipher");

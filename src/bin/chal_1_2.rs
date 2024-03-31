@@ -1,5 +1,5 @@
 use std::iter::zip;
-use rustopals::EverythingRemainsRaw;
+use rustopals::raw::EverythingRemainsRaw;
 
 fn main() {
     println!("https://cryptopals.com/sets/1/challenges/2 - Fixed XOR");

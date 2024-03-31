@@ -1,22 +1,27 @@
 use std::{fs::File, io::Read};
 use itertools::Itertools;
-use rustopals::EverythingRemainsRaw;
+use rustopals::raw::EverythingRemainsRaw;
 
 const MAX_KEY_LEN: usize = 40;
 
-fn do_chal() {
+fn do_chal() -> String {
+    // Load the file, remove newlines to make one long line of b64
     let a = File::open("test_data/6.txt")
         .unwrap().bytes()
         .map(|c| c.unwrap() as char)
         .collect::<String>()
         .split('\n').join("");
 
+    // Decode b64
     let raw_input = Vec::from_base64(&a);
     
+    // Group the data into chunks of len()==keysize, compute the avg hamming distance between every consecutive group
     let mut avg_hamms: [Option<f32>; MAX_KEY_LEN] = [None; MAX_KEY_LEN];
     for key_size in 1..MAX_KEY_LEN {
         let mut ri_iter = raw_input.iter();
         let mut chunks: Vec<Vec<u8>> = Vec::new();
+        
+        // Make groups
         loop {
             let mut chunk: Vec<u8> = Vec::new();
             for _ in 0..key_size {
@@ -33,6 +38,8 @@ fn do_chal() {
                 break; /* loop */ 
             }
         }
+
+        // Compute average hamming distance
         let mut n_groups = 0;
         let mut d_total = 0;
         for (a, b) in chunks.iter().tuple_windows() {
@@ -46,6 +53,7 @@ fn do_chal() {
         
         println!("{} {:?}", key_size, avg_hamms[key_size]);
     }
+    "Who knows!".to_string()
 }
 
 fn main() {
@@ -55,5 +63,5 @@ fn main() {
 
 #[test]
 fn chal_1_6() {
-    assert_eq!(2+2, 5);
+    assert_eq!(do_chal(), "I sure don't!");
 }

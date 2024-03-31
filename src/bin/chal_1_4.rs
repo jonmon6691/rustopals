@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 use itertools::Itertools;
-use rustopals::{EverythingRemainsRaw, SBX};
+use rustopals::{raw::EverythingRemainsRaw, SBX};
 
 fn do_chal() -> SBX {
     // One line to rule them all
