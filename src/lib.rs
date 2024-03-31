@@ -4,7 +4,7 @@ use itertools::Itertools;
 pub mod raw;
 
 /// Calculates the Hamming Distance between two raw strings
-pub fn hamming(a: &Vec<u8>, b: &Vec<u8>) -> usize {
+pub fn hamming(a: &[u8], b: &[u8]) -> usize {
     zip(a, b)
         .map(|(aa, bb)| aa ^ bb)
         .map(|x| 
