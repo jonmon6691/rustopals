@@ -1,13 +1,15 @@
 a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-for i in range(255):
+print("static B64_DEC: [Option<u8>; 256] = [", end="")
+for i in range(256):
     n = a.find(chr(i))
     if n == -1:
         print("None, ", end="")
     else:
         print(f"Some({n}), ", end="")
+print("];")
 
-"""
-static B64_DEC: [Option<u8>; 255] = [None, None, None, None, None, None, None,
+""" Output:
+static B64_DEC: [Option<u8>; 256] = [None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
@@ -32,5 +34,5 @@ static B64_DEC: [Option<u8>; 255] = [None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
-    None];
+    None, None, ];
 """

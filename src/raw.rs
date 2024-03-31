@@ -136,7 +136,7 @@ static B64_ENC: [char; 64] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
     '7', '8', '9', '+', '/'];
 
 /// Base64 decoding lookup table
-static B64_DEC: [Option<u8>; 255] = [None, None, None, None, None, None, None,
+static B64_DEC: [Option<u8>; 256] = [None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
@@ -161,4 +161,4 @@ static B64_DEC: [Option<u8>; 255] = [None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
     None, None, None, None, None, None, None, None, None, None, None, None,
-    None];
+    None, None];
