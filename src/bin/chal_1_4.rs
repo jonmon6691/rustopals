@@ -1,13 +1,11 @@
-use std::{fs::File, io::Read};
+use std::fs;
 use itertools::Itertools;
 use rustopals::{raw::EverythingRemainsRaw, SBX};
 
 fn do_chal() -> SBX {
     // One line to rule them all
-    File::open("test_data/4.txt")
-        .unwrap().bytes()
-        .map(|c| c.unwrap() as char)
-        .collect::<String>()
+    fs::read_to_string("test_data/4.txt")
+        .unwrap()
         .split('\n')
         .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))

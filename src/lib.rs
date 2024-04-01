@@ -8,8 +8,15 @@ pub fn hamming(a: &[u8], b: &[u8]) -> usize {
     zip(a, b)
         .map(|(aa, bb)| aa ^ bb)
         .map(|x| 
-            (0..8).map(|i| if x & (1 << i) > 0 {1} else {0}).sum::<usize>())
+            (0..8).map(|i| if x & (1 << i) > 0 {1} else {0})
+            .sum::<usize>())
         .sum()
+}
+
+/// Goes great with split pea soup, mmmmm
+pub fn ham_chunks(data: &Vec<u8>, k_len: usize, chunk_i: usize) -> usize {
+    hamming(&data[chunk_i * k_len .. (chunk_i + 1) * k_len],
+        &data[(chunk_i + 1) * k_len .. (chunk_i + 2) * k_len]) * 100 / k_len
 }
 
 #[test]
@@ -45,6 +52,7 @@ fn score_text(text: &Vec<u8>) -> usize {
         .sum::<usize>() / text.len()
 }
 
+/// SBX - Single Byte XOR
 /// A message decrypted using the held `key` byte and with a `score` relating to
 /// its likelihood of being valid English text.
 pub struct SBX {
@@ -81,5 +89,58 @@ impl SBX {
     pub fn to_string(self) -> String {
         format!("Plaintext: {}", String::from_utf8(self.plaintext.clone())
             .unwrap_or("Failure: [Error Decoding UTF-8]".to_string()))
+    }
+}
+
+/// RBX - Repeating Byte XOR
+pub struct RBX {
+    pub k_len: usize,
+    pub ham_score: usize,
+    pub key: Option<Vec<u8>>,
+    pub plaintext: Option<String>,
+}
+
+impl RBX {
+    pub fn new(k_len: usize, ciphertext: &Vec<u8>) -> RBX {
+        let n_chunks = ciphertext.len() / k_len - 1;
+        RBX {
+            k_len,
+            ham_score: (0..n_chunks)
+                .map(|i| ham_chunks(&ciphertext, k_len, i))
+                .sum::<usize>() * 100 / n_chunks,
+            key: None,
+            plaintext: None,
+        }
+    }
+
+    pub fn from_ciphertext(ciphertext: &Vec<u8>, max_k_len: usize) -> RBX {
+        // Find the key length with the lowest hamming score between consecutive key length chunks
+        let me = (1..max_k_len)
+            .map(|ks| Self::new(ks, &ciphertext))
+            .sorted_by_key(|trail| trail.ham_score)
+            .next().unwrap();
+        
+        // Find the key by performing SingleByteXor on each subset of the ciphertext that corresponds to the same key byte
+        let key: Vec<u8> = (0..me.k_len)
+            .map(|i| SBX::from_ciphertext(
+                &ciphertext.iter()
+                    .skip(i).step_by(me.k_len)
+                    .copied()
+                    .collect::<Vec<u8>>()).key)
+            .collect();
+
+        // Convert the ciphertext by xor'ing the key
+        let plaintext = String::from_utf8(
+            ciphertext.iter()
+            .zip(key.iter().cycle())
+            .map(|(a, b)| a ^ b)
+            .collect()).ok();
+        
+        RBX {
+            k_len: me.k_len,
+            ham_score: me.ham_score,
+            key: Some(key),
+            plaintext
+        }
     }
 }
