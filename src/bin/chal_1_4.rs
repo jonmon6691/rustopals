@@ -1,6 +1,6 @@
-use std::fs;
 use itertools::Itertools;
 use rustopals::{raw::EverythingRemainsRaw, SBX};
+use std::fs;
 
 fn do_chal() -> SBX {
     // One line to rule them all
@@ -10,7 +10,9 @@ fn do_chal() -> SBX {
         .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))
         .sorted_by_key(|trial| trial.score)
-        .rev().next().unwrap()
+        .rev()
+        .next()
+        .unwrap()
 }
 
 fn main() {
@@ -19,7 +21,10 @@ fn main() {
     let ice = do_chal();
 
     //Print the results
-    println!("Key: dec:{} hex:{:x} ascii:{}", ice.key, ice.key, ice.key as char);
+    println!(
+        "Key: dec:{} hex:{:x} ascii:{}",
+        ice.key, ice.key, ice.key as char
+    );
     println!("{}", ice.to_string());
 }
 
@@ -29,7 +34,7 @@ fn chal_1_4() {
     assert_eq!(ice.key, !202); // Obfuscated ;)
 }
 
-/* For posterity, here's the version that took down the website (maybe) 
+/* For posterity, here's the version that took down the website (maybe)
 use ureq;
 
 fn chal_1_4() {
