@@ -6,22 +6,17 @@ pub mod raw;
 /// Calculates the Hamming Distance between two raw strings
 pub fn hamming(a: &[u8], b: &[u8]) -> usize {
     zip(a, b)
-        .map(|(aa, bb)| aa ^ bb)
-        .map(|x| {
-            (0..8)
-                .map(|i| if x & (1 << i) > 0 { 1 } else { 0 })
-                .sum::<usize>()
-        })
+        .map(|(aa, bb)| (aa ^ bb).count_ones() as usize)
         .sum()
 }
 
 /// Goes great with split pea soup, mmmmm
 pub fn ham_chunks(data: &Vec<u8>, k_len: usize, chunk_i: usize) -> usize {
     hamming(
-        &data[chunk_i * k_len..(chunk_i + 1) * k_len],
-        &data[(chunk_i + 1) * k_len..(chunk_i + 2) * k_len],
-    ) * 100
-        / k_len
+        &data[(chunk_i + 0) * k_len .. (chunk_i + 1) * k_len],
+        &data[(chunk_i + 1) * k_len .. (chunk_i + 2) * k_len],
+    ) * 100 // Blow up the number a bit so normalization doesn't squash the precision too much
+        / k_len // Normalization
 }
 
 #[test]
