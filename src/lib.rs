@@ -105,43 +105,28 @@ impl SBX {
 
 /// RBX - Repeating Byte XOR
 pub struct RBX {
-    pub k_len: usize,
-    pub ham_score: usize,
-    pub key: Option<Vec<u8>>,
-    pub plaintext: Option<String>,
+    pub chunk_info: ChunkCoherence,
+    pub key: Vec<u8>,
+    pub plaintext: Vec<u8>,
 }
 
 impl RBX {
-    pub fn new(k_len: usize, ciphertext: &Vec<u8>) -> RBX {
-        let n_chunks = ciphertext.len() / k_len - 1;
-        RBX {
-            k_len,
-            ham_score: (0..n_chunks)
-                .map(|i| ham_chunks(&ciphertext, k_len, i))
-                .sum::<usize>()
-                * 100
-                / n_chunks,
-            key: None,
-            plaintext: None,
-        }
-    }
-
     pub fn from_ciphertext(ciphertext: &Vec<u8>, max_k_len: usize) -> RBX {
         // Find the key length with the lowest hamming score between consecutive key length chunks
-        let me = (1..max_k_len)
-            .map(|ks| Self::new(ks, &ciphertext))
+        let chunk_info = (1..max_k_len)
+            .map(|ks| ChunkCoherence::new(ks, &ciphertext))
             .sorted_by_key(|trail| trail.ham_score)
             .next()
             .unwrap();
 
         // Find the key by performing SingleByteXor on each subset of the ciphertext that corresponds to the same key byte
-        let key: Vec<u8> = (0..me.k_len)
+        let key: Vec<u8> = (0..chunk_info.k_len)
             .map(|i| {
                 SBX::from_ciphertext(
                     &ciphertext
                         .iter()
                         .skip(i)
-                        .step_by(me.k_len)
+                        .step_by(chunk_info.k_len)
                         .copied()
                         .collect::<Vec<u8>>(),
                 )
@@ -150,20 +135,35 @@ impl RBX {
             .collect();
 
         // Convert the ciphertext by xor'ing the key
-        let plaintext = String::from_utf8(
-            ciphertext
+        let plaintext = ciphertext
                 .iter()
                 .zip(key.iter().cycle())
                 .map(|(a, b)| a ^ b)
-                .collect(),
-        )
-        .ok();
+                .collect();
 
         RBX {
-            k_len: me.k_len,
-            ham_score: me.ham_score,
-            key: Some(key),
+            chunk_info,
+            key,
             plaintext,
+        }
+    }
+}
+
+pub struct ChunkCoherence {
+    pub k_len: usize,
+    pub ham_score: usize,
+}
+
+impl ChunkCoherence {
+    pub fn new(k_len: usize, ciphertext: &Vec<u8>) -> ChunkCoherence {
+        let n_chunks = ciphertext.len() / k_len - 1;
+        ChunkCoherence {
+            k_len,
+            ham_score: (0..n_chunks)
+                .map(|i| ham_chunks(&ciphertext, k_len, i))
+                .sum::<usize>()
+                * 100
+                / n_chunks,
         }
     }
 }

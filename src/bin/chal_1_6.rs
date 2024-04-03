@@ -22,13 +22,13 @@ fn main() {
     println!("Lets do this");
     let a = do_chal();
 
-    println!("Key length (bytes): {}", a.k_len);
+    println!("Key length (bytes): {}", a.chunk_info.k_len);
 
-    let k_str = String::from_utf8(a.key.unwrap().clone()).unwrap_or("[Not valid UTF-8]".to_owned());
+    let k_str = a.key.to_string().unwrap_or("[Not valid UTF-8]".to_owned());
     println!("Key: {}", &k_str);
 
     // Decrypt the ciphertext
-    let plaintext = a.plaintext.unwrap_or("[Not valid UTF-8]".to_owned());
+    let plaintext = a.plaintext.to_string().unwrap_or("[Not valid UTF-8]".to_owned());
     println!("\nPlaintext:\n{}", plaintext);
 }
 
@@ -36,5 +36,5 @@ fn main() {
 fn chal_1_6() {
     // Obfuscated ;)
     let expected_key = Vec::from_base64("VGVybWluYXRvciBYOiBCcmluZyB0aGUgbm9pc2U=");
-    assert_eq!(do_chal().key.unwrap(), expected_key);
+    assert_eq!(do_chal().key, expected_key);
 }
