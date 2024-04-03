@@ -14,7 +14,7 @@ fn main() {
         "Key: dec:{} hex:{:x} ascii:{}",
         answer.key, answer.key, answer.key as char
     );
-    println!("{}", answer.to_string());
+    println!("Plaintext: {}", answer.plaintext.to_string().unwrap());
 }
 
 #[test]

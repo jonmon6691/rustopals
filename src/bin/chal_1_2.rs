@@ -6,14 +6,13 @@ fn main() {
 
     let input_bytes = Vec::from_hex("1c0111001f010100061a024b53535009181c");
     let key_bytes = Vec::from_hex("686974207468652062756c6c277320657965");
-    let pt = String::from_utf8(
-        zip(input_bytes.iter(), key_bytes.iter())
-            .map(|(a, b)| a ^ b)
-            .collect::<Vec<u8>>(),
-    )
-    .unwrap();
+    let pt = zip(input_bytes.iter(), key_bytes.iter())
+        .map(|(a, b)| a ^ b)
+        .collect::<Vec<u8>>()
+        .to_string()
+        .unwrap();
 
-    println!("Key:       {}", String::from_utf8(key_bytes.clone()).unwrap());
+    println!("Key:       {}", key_bytes.to_string().unwrap());
     println!("Plaintext: {}", pt);
 }
 

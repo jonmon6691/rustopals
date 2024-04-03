@@ -87,20 +87,6 @@ impl SBX {
             .next()
             .unwrap() // Return the tuple with the highest score
     }
-
-    /// Attempt to convert the decrypted message to a `String` otherwise return a `String`
-    /// containing an error message.
-    ///
-    /// Note: the decrypted string will always be returned with
-    /// the prefix `"Plaintext:" `to avoid confusing a plaintext which itself looks like the
-    /// error message string.
-    pub fn to_string(self) -> String {
-        format!(
-            "Plaintext: {}",
-            String::from_utf8(self.plaintext.clone())
-                .unwrap_or("Failure: [Error Decoding UTF-8]".to_string())
-        )
-    }
 }
 
 /// RBX - Repeating Byte XOR
