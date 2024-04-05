@@ -17,7 +17,7 @@ impl EverythingRemainsRaw for Vec<u8> {
     ///
     /// # Panics
     /// Panics if a character in `data` is not valid hex
-    fn from_hex(data: &str) -> Vec<u8> {
+    fn from_hex(data: &str) -> Self {
         data.chars()
             .tuples()
             .map(|(hi, low)| (hi.to_digit(16).unwrap() * 16 + low.to_digit(16).unwrap()) as u8)
@@ -51,7 +51,7 @@ impl EverythingRemainsRaw for Vec<u8> {
     ///
     /// # Panics
     /// Panics on malformed base64 strings
-    fn from_base64(data: &str) -> Vec<u8> {
+    fn from_base64(data: &str) -> Self {
         data.as_bytes()
             .iter()
             .map(|c: &u8| B64_DEC[*c as usize])

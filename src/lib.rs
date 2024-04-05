@@ -64,9 +64,9 @@ pub struct SBX {
 impl SBX {
     /// Use a given `key` to decrypt a given `ciphertext`. The `plaintext` and
     /// `score` are calculated during instantiation.
-    pub fn new(key: u8, ciphertext: &Vec<u8>) -> SBX {
+    pub fn new(key: u8, ciphertext: &Vec<u8>) -> Self {
         let plaintext = ciphertext.iter().map(|b| b ^ key).collect();
-        SBX {
+        Self {
             key,
             score: score_text(&plaintext),
             plaintext,
@@ -74,9 +74,9 @@ impl SBX {
     }
 
     /// Returns a new SBX which has the highest `score` out of all possible `key`'s
-    pub fn from_ciphertext(ciphertext: &Vec<u8>) -> SBX {
+    pub fn from_ciphertext(ciphertext: &Vec<u8>) -> Self {
         (0..=255)
-            .map(|key| SBX::new(key, ciphertext))
+            .map(|key| Self::new(key, ciphertext))
             .sorted_by_key(|trial| trial.score) // Sort by score
             .rev()
             .next()
@@ -92,7 +92,7 @@ pub struct RBX {
 }
 
 impl RBX {
-    pub fn from_ciphertext(ciphertext: &Vec<u8>, max_k_len: usize) -> RBX {
+    pub fn from_ciphertext(ciphertext: &Vec<u8>, max_k_len: usize) -> Self {
         // Find the key length with the lowest hamming score between consecutive key length chunks
         let chunk_info = (1..max_k_len)
             .map(|ks| ChunkCoherence::new(ks, &ciphertext))
@@ -122,7 +122,7 @@ impl RBX {
                 .map(|(a, b)| a ^ b)
                 .collect();
 
-        RBX {
+        Self {
             chunk_info,
             key,
             plaintext,
@@ -136,9 +136,9 @@ pub struct ChunkCoherence {
 }
 
 impl ChunkCoherence {
-    pub fn new(k_len: usize, ciphertext: &Vec<u8>) -> ChunkCoherence {
+    pub fn new(k_len: usize, ciphertext: &Vec<u8>) -> Self {
         let n_chunks = ciphertext.len() / k_len - 1;
-        ChunkCoherence {
+        Self {
             k_len,
             ham_score: (0..n_chunks)
                 .map(|i| ham_chunks(&ciphertext, k_len, i))
