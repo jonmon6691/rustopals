@@ -7,7 +7,7 @@ fn main() {
     let expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
     let output = input_bytes.clone().into_base64();
 
-    println!("Input    : {}", input_bytes.to_string().unwrap());
+    println!("Input    : {}", input_bytes.to_string());
     println!("Expected : {}", expected);
     println!("Got      : {}", output);
 }

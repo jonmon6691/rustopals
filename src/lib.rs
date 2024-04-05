@@ -94,7 +94,7 @@ pub struct RBX {
 impl RBX {
     pub fn from_ciphertext(ciphertext: &Vec<u8>, max_k_len: usize) -> Self {
         // Find the key length with the lowest hamming score between consecutive key length chunks
-        let chunk_info = (1..max_k_len)
+        let chunk_info = (2..=max_k_len)
             .map(|ks| ChunkCoherence::new(ks, &ciphertext))
             .sorted_by_key(|trail| trail.ham_score)
             .next()

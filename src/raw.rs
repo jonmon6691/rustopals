@@ -5,7 +5,7 @@ pub trait EverythingRemainsRaw {
     fn into_hex(self) -> String;
     fn into_base64(self) -> String;
     fn from_base64(data: &str) -> Vec<u8>;
-    fn to_string(self) -> Result<String, std::string::FromUtf8Error>;
+    fn to_string(self) -> String;
 }
 
 impl EverythingRemainsRaw for Vec<u8> {
@@ -75,8 +75,8 @@ impl EverythingRemainsRaw for Vec<u8> {
             .collect()
     }
 
-    fn to_string(self) -> Result<String, std::string::FromUtf8Error> {
-        String::from_utf8(self)
+    fn to_string(self) -> String {
+        String::from_utf8(self).unwrap_or("[Error decoding UTF-8]".to_owned())
     }
 }
 

@@ -1,23 +1,29 @@
 use rustopals::raw::EverythingRemainsRaw;
+use std::{env, io};
 
+// Provides a commandline "encryption" tool
+// `$ cat plaintextfile.txt | cargo run --bin chal_1_5 <key> > ciphertext_file.b64`
 fn main() {
-    println!("https://cryptopals.com/sets/1/challenges/5 - Implement repeating-key XOR");
+    let args: Vec<String> = env::args().collect();
 
-    let plaintext =
-        String::from("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
-            .into_bytes();
-    let key = String::from("ICE").into_bytes();
+    let key = args
+        .get(1)
+        .expect("Argument error: provide the key as an argument")
+        .clone()
+        .into_bytes();
+
+    let plaintext = io::read_to_string(io::stdin())
+        .expect("Error reading file from STDIN");
 
     // Function chaining feels so right
     let ct: Vec<u8> = plaintext
+        .as_bytes()
         .iter()
         .zip(key.iter().cycle())
         .map(|(a, b)| a ^ b)
         .collect();
 
-    let ct: String = ct.into_hex();
-
-    println!("Got: {}", ct)
+    print!("{}", ct.into_base64());
 }
 
 #[test]

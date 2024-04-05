@@ -9,10 +9,9 @@ fn main() {
     let pt = zip(input_bytes.iter(), key_bytes.iter())
         .map(|(a, b)| a ^ b)
         .collect::<Vec<u8>>()
-        .to_string()
-        .unwrap();
+        .to_string();
 
-    println!("Key:       {}", key_bytes.to_string().unwrap());
+    println!("Key:       {}", key_bytes.to_string());
     println!("Plaintext: {}", pt);
 }
 

@@ -25,7 +25,7 @@ fn main() {
         "Key: dec:{} hex:{:x} ascii:{}",
         ice.key, ice.key, ice.key as char
     );
-    println!("Plaintext: {}", ice.plaintext.to_string().unwrap());
+    println!("Plaintext: {}", ice.plaintext.to_string());
 }
 
 #[test]
