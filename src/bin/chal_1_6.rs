@@ -7,7 +7,7 @@ fn do_chal(file: &str, max_k_len: usize) -> RBX {
     let raw_input = Vec::from_base64(
         &fs::read_to_string(file)
             .expect("Error reading file")
-            .split('\n')
+            .split_ascii_whitespace()
             .join(""),
     );
 
