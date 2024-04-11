@@ -1,5 +1,5 @@
 use std::fs;
-use aes::{cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit}, Aes128Dec};
+use aes::{cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit}, Aes128};
 use cipher::block_padding::Pkcs7;
 use itertools::Itertools;
 use rustopals::raw::EverythingRemainsRaw;
@@ -14,7 +14,7 @@ fn do_chal() -> Vec<u8> {
     );
     let key = "YELLOW SUBMARINE".as_bytes();
 
-    Aes128Dec::new(&GenericArray::from_slice(&key))
+    Aes128::new(&GenericArray::from_slice(&key))
         .decrypt_padded::<Pkcs7>(&mut raw_input)
         .expect("Padding error in decrypted message!")
         .to_owned()
