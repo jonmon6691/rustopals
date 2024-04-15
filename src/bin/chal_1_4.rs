@@ -6,7 +6,7 @@ fn do_chal() -> SBX {
     // One line to rule them all
     fs::read_to_string("test_data/4.txt")
         .unwrap()
-        .split('\n')
+        .split_ascii_whitespace()
         .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))
         .sorted_by_key(|trial| trial.score)
