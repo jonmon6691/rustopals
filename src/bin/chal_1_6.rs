@@ -31,7 +31,7 @@ fn main() {
         .parse()
         .expect("Argument error: 2nd argument for max key length should be an int");
 
-    assert!(max_k_len > 1, "Argument error: 2nd argument for max key length should be greater than 1");
+    assert!(max_k_len >= 1, "Argument error: 2nd argument for max key length should be greater than or equal to 1");
 
     let a = do_chal(path, max_k_len);
 
