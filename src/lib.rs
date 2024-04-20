@@ -27,6 +27,23 @@ fn unmistakable_hamming() {
     assert_eq!(hd, 37);
 }
 
+/// Returns true if there are any two k_len chunks in data that are repeated
+/// Only searches chunks alinged by k_len
+pub fn detect_ecb(data: &Vec<u8>, k_len: usize) -> bool {
+    let n_chunks = data.len() / k_len - 1;
+
+    (0..n_chunks).map(|left| {
+        (left+1..n_chunks).map(move |right: usize| {
+            hamming(
+                &data[left  * k_len .. (left  + 1) * k_len],
+                &data[right * k_len .. (right + 1) * k_len])
+        })
+    })
+    .flatten()
+    .filter(|m| *m == 0)
+    .count() > 0
+}
+
 // Mapping from utf8 codepoint to character frequency score.
 // generated in /tools/generate_char_freq.py
 static SCORES_EN_US: [usize; 256] = [
