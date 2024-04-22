@@ -9,3 +9,4 @@ edition = "2021"
 itertools = "0.12"
 aes = "0.8.4"
 cipher = {version = "0.4", features=["block-padding"]}
+clap = {version = "4.5", features=["derive"]}
