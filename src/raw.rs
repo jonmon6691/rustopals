@@ -54,6 +54,7 @@ impl EverythingRemainsRaw for Vec<u8> {
     fn from_base64(data: &str) -> Self {
         data.as_bytes()
             .iter()
+            .filter(|c| c.is_ascii_whitespace() == false)
             .map(|c: &u8| B64_DEC[*c as usize])
             .tuples()
             .map(|chunk| match chunk {
