@@ -1,5 +1,5 @@
 use std::{fs, io::{self, stdin, Read}};
-use rustopals::{detect_ecb, raw::EverythingRemainsRaw};
+use rustopals::{blocky::detect_ecb, raw::EverythingRemainsRaw};
 use clap::{command, Parser, ValueEnum};
 
 #[derive(Parser)]
