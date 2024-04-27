@@ -57,12 +57,9 @@ fn main() {
 #[test]
 fn chal_1_7() {
     use itertools::fold;
-    use itertools::Itertools;
 
     let mut raw_input = Vec::from_base64(&fs::read_to_string("test_data/7.txt")
-        .expect("Error reading file")
-        .split_ascii_whitespace()
-        .join(""));
+        .expect("Error reading file"));
 
     let key = "YELLOW SUBMARINE".as_bytes();
 
