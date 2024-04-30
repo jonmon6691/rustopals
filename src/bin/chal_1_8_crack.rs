@@ -1,8 +1,8 @@
-// Trying to crack the key to the detected ECB mode ciphertext from challenge 8
-// So far I've tried
-// * Every 16 character word (5k of them) key from https://github.com/dwyl/english-words/blob/master/words_alpha.txt
-// * every 2-word key ala "YELLOW SUBMARINE", both upper and lower case. (many many millions of them)
-// * that's it so far
+/// Trying to crack the key to the detected ECB mode ciphertext from challenge 8
+/// So far I've tried
+/// * Every 16 character word (5k of them) key from https://github.com/dwyl/english-words/blob/master/words_alpha.txt
+/// * every 2-word key ala "YELLOW SUBMARINE", both upper and lower case. (many many millions of them)
+/// * that's it so far
 
 use std::{collections::HashMap, fs, io};
 use aes::{cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit}, Aes128};

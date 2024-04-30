@@ -1,4 +1,7 @@
+/// Block based stuff
+
 use super::hamming;
+
 /// Takes a Vec<u8> of data of any length, returns a vector of chunks of size k_len, with the last chunk padded using PKCS7
 /// 
 /// # Panics

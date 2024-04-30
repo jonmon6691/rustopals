@@ -1,3 +1,6 @@
+/// Converts data between raw, hex, and base64
+/// via command line utility, use --help for docs
+
 use std::{fs, io::{self, stdin, stdout, Read, Write}};
 use itertools::Itertools;
 use rustopals::raw::EverythingRemainsRaw;

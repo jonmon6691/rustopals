@@ -1,8 +1,11 @@
+/// # Repeating key XOR aka Vigenere Cipher
+/// 
+/// Provides a simple commandline "encryption" tool
+/// `$ cat plaintextfile.txt | cargo run --bin chal_1_5 <key> > ciphertext_file.b64`
+
 use rustopals::raw::EverythingRemainsRaw;
 use std::{env, io};
 
-// Provides a commandline "encryption" tool
-// `$ cat plaintextfile.txt | cargo run --bin chal_1_5 <key> > ciphertext_file.b64`
 fn main() {
     let args: Vec<String> = env::args().collect();
 

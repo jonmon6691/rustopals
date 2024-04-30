@@ -1,3 +1,7 @@
+/// Detects ciphertext in ECB mode
+/// 
+/// Provides a commandline utility, use --help for more info
+
 use std::{fs, io::{self, stdin, Read}};
 use rustopals::{blocky::detect_ecb, raw::EverythingRemainsRaw};
 use clap::{command, Parser, ValueEnum};

@@ -1,3 +1,5 @@
+/// Detecting single key XOR
+
 use itertools::Itertools;
 use rustopals::{raw::EverythingRemainsRaw, SBX};
 use std::fs;
@@ -5,14 +7,14 @@ use std::fs;
 fn do_chal() -> SBX {
     // One line to rule them all
     fs::read_to_string("test_data/4.txt")
-        .unwrap()
-        .split_ascii_whitespace()
+        .expect("Error reading input file")
+        .split_whitespace()
         .map(|line| Vec::from_hex(line))
         .map(|ct| rustopals::SBX::from_ciphertext(&ct))
         .sorted_by_key(|trial| trial.score)
         .rev()
         .next()
-        .unwrap()
+        .expect("No data found in input file")
 }
 
 fn main() {

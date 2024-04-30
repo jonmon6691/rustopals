@@ -1,3 +1,5 @@
+/// Welcome to the junk drawer
+
 use itertools::Itertools;
 use std::iter::zip;
 

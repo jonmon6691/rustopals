@@ -1,3 +1,5 @@
+/// XOR two vectors
+
 use rustopals::raw::EverythingRemainsRaw;
 use std::iter::zip;
 

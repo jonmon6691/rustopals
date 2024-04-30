@@ -1,3 +1,5 @@
+/// Chunks a data message and pads the last chunk so they're all k_len long
+
 use rustopals::blocky::pkcs7_chunker;
 
 fn main() {

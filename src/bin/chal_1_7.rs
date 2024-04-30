@@ -1,3 +1,7 @@
+/// AES-128-ECB Decryption
+///
+/// Provides a commandline utility, use --help for more info
+
 use std::{fs, io::{self, stdin, stdout, Read, Write}};
 use aes::{cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit}, Aes128};
 use cipher::block_padding::Pkcs7;

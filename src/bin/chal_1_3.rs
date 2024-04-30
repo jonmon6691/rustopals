@@ -1,3 +1,5 @@
+/// Breaking single byte XOR
+
 use rustopals::raw::EverythingRemainsRaw;
 
 fn main() {

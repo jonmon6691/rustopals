@@ -1,3 +1,8 @@
+/// Breaks repeating key XOR
+/// 
+// Provides a commandline decrypter
+// `$ cargo run --bin chal_1_6 <input file of b64> <max key length to search, default 40>`
+
 use itertools::Itertools;
 use rustopals::{raw::EverythingRemainsRaw, RBX};
 use std::{fs, env};
@@ -16,8 +21,6 @@ fn do_chal(file: &str, max_k_len: usize) -> RBX {
     RBX::from_ciphertext(&raw_input, max_k_len)
 }
 
-// Provides a commandline decrypter
-// `$ cargo run --bin chal_1_6 <input file of b64> <max key length to search, default 40>`
 fn main() {
     let args: Vec<String> = env::args().collect();
 

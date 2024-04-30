@@ -1,3 +1,5 @@
+# Generates a base64 lookup table for use in Rust
+
 a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 print("static B64_DEC: [Option<u8>; 256] = [", end="")
 for i in range(256):
