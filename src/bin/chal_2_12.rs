@@ -4,12 +4,12 @@ use std::io::Read;
 
 fn main() {
     let mut rng = thread_rng();
-    // Random key, generated here so it can be persistant throughout the attack
+    // Random key, generated here so it can be persistent throughout the attack
     let key: [u8; 16] = rng.gen();
-    ecb_phonebok(|input| channel(input, key));
+    ecb_phonebook(|input| channel(input, key));
 }
 
-fn ecb_phonebok(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Vec<u8> {
+fn ecb_phonebook(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Vec<u8> {
     let block_size = detect_ecb_blocksize(&blackbox, 512 / 8);
     println!("{:?}", block_size);
     vec![]
