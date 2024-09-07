@@ -10,10 +10,15 @@ use cipher::{BlockEncrypt, KeyInit};
 /// if k_len is greater than 255
 pub fn pkcs7_chunker(data: Vec<u8>, k_len: usize) -> Vec<Vec<u8>> {
     assert!(k_len <= 255);
-    data.chunks(k_len)
+    let mut ret: Vec<Vec<u8>> = data
+        .chunks(k_len)
         .into_iter()
         .map(|chunk| pkcs7_padder(chunk, k_len))
-        .collect()
+        .collect();
+    if data.len() % k_len == 0 {
+        ret.push(Vec::from_iter(itertools::repeat_n(k_len as u8, k_len)));
+    }
+    ret
 }
 
 pub fn pkcs7_padder(chunk: &[u8], k_len: usize) -> Vec<u8> {
@@ -49,6 +54,23 @@ pub fn detect_ecb(data: &[u8], k_len: usize) -> bool {
         .filter(|m| *m == 0)
         .count()
         > 0
+}
+
+/// Passes longer and longer strings to the black box encrypter until its size jumps. The size of the jump is assumed to be the block length
+pub fn detect_ecb_blocksize(
+    blackbox: impl Fn(&[u8]) -> Vec<u8>,
+    max_bytes: usize,
+) -> Option<usize> {
+    let mut probe: Vec<u8> = Vec::with_capacity(max_bytes);
+    let min_size = blackbox(&probe).len();
+    for _ in 1..=max_bytes {
+        probe.push(0);
+        let delta = blackbox(&probe).len() - min_size;
+        if delta != 0 {
+            return Some(delta);
+        }
+    }
+    None
 }
 
 pub fn aes_128_cbc_encrypt_vec(pt: Vec<u8>, key: [u8; 16], iv: [u8; 16]) -> Vec<u8> {
