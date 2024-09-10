@@ -1,9 +1,12 @@
 /// Block based stuff
 use super::hamming;
 use crate::raw::EverythingRemainsRaw;
-use aes::Aes128;
-use cipher::generic_array::GenericArray;
-use cipher::{BlockEncrypt, KeyInit};
+use aes::{
+    cipher::{
+        block_padding::Pkcs7, generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit,
+    },
+    Aes128,
+};
 use itertools::{repeat_n, Itertools};
 use std::iter;
 
@@ -48,6 +51,26 @@ pub fn print_blocks(data: &[u8], block_len: usize) {
     print!("\n");
 }
 
+// Returns a function that emulates an unknown ECB channel
+pub fn make_ecb_channel<'a>(
+    prefix: &'a [u8],
+    suffix: &'a [u8],
+    key: [u8; 128 / 8],
+) -> impl Fn(&[u8]) -> Vec<u8> + 'a {
+    move |input: &[u8]| -> Vec<u8> {
+        aes_128_ecb_encrypt_vec(
+            Vec::from_iter(
+                prefix
+                    .iter()
+                    .chain(input.iter())
+                    .chain(suffix.iter())
+                    .copied(),
+            ),
+            key,
+        )
+    }
+}
+
 /// Returns true if there are any two k_len chunks in data that are repeated
 /// Only searches chunks alinged by k_len
 pub fn detect_ecb(data: &[u8], k_len: usize) -> bool {
@@ -78,7 +101,7 @@ pub fn crack_ecb_suffix(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> 
     // Finds pair of repeated blocks caused by our input, this tells us when the suffix is aligned on a block boundary and where it is.
     // TODO: This can probably be optimized by noticing when a changing block freezes, instead of waiting for 2 identical blocks to appear.
     let (n_pad_until_suffix_aligned, start_of_repeated_blocks) = (2 * block_size..3 * block_size)
-        .map(|i| find_repeat_blocks(&blackbox(&Vec::from_iter(repeat_n(0, i))), block_size))
+        .map(|i| find_repeat_blocks(&blackbox(&Vec::from_iter(repeat_n(0x61, i))), block_size))
         .find_position(|trial| trial.is_some())
         .expect("Couldn't find duplicate blocks, are you sure this is ECB?");
     let start_of_repeated_blocks = start_of_repeated_blocks
@@ -87,7 +110,7 @@ pub fn crack_ecb_suffix(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> 
     // Find out how much of the suffix is in the padding block
     let n_pad_until_suffix_overflow = (n_pad_until_suffix_aligned
         ..=n_pad_until_suffix_aligned + block_size)
-        .map(|probe_length| blackbox(&Vec::from_iter(repeat_n(0, probe_length))).len())
+        .map(|probe_length| blackbox(&Vec::from_iter(repeat_n(0x61, probe_length))).len())
         .tuple_windows()
         .enumerate()
         .filter_map(|(i, (prev, next))| if next > prev { Some(i) } else { None })
@@ -95,7 +118,7 @@ pub fn crack_ecb_suffix(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> 
         .expect("Cipher should have grown by one block length");
 
     let _len_prefix = start_of_repeated_blocks - n_pad_until_suffix_aligned;
-    let ct_len = blackbox(&Vec::from_iter(repeat_n(0, n_pad_until_suffix_aligned))).len();
+    let ct_len = blackbox(&Vec::from_iter(repeat_n(0x61, n_pad_until_suffix_aligned))).len();
     let len_suffix = ct_len - start_of_repeated_blocks - n_pad_until_suffix_overflow - 1;
 
     // Break AES in ECB mode
@@ -106,7 +129,7 @@ pub fn crack_ecb_suffix(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> 
         // more byte. Then encrypt it. Then pull out the block which is all
         // known except for that last byte
         let ct_target = &blackbox(&Vec::from_iter(repeat_n(
-            0,
+            0x61,
             block_offset + n_pad_until_suffix_aligned + block_size - 1 - i,
         )))[block_offset + start_of_repeated_blocks..][..block_size];
         // Loop through every possible value of the last byte and compare to
@@ -116,7 +139,7 @@ pub fn crack_ecb_suffix(blackbox: impl Fn(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> 
                 .filter_map(|check_byte| {
                     let probe = Vec::from_iter(
                         repeat_n(
-                            0,
+                            0x61,
                             block_offset + n_pad_until_suffix_aligned + block_size - 1 - i,
                         )
                         .chain(pt.iter().copied())
@@ -143,7 +166,7 @@ pub fn detect_ecb_blocksize(
     max_bytes: usize,
 ) -> Option<usize> {
     (0..max_bytes)
-        .map(|probe_length| blackbox(&Vec::from_iter(repeat_n(0, probe_length))).len())
+        .map(|probe_length| blackbox(&Vec::from_iter(repeat_n(0x61, probe_length))).len())
         .tuple_windows()
         .filter_map(|(prev, next)| if next > prev { Some(next - prev) } else { None })
         .next()
@@ -183,6 +206,14 @@ pub fn aes_128_ecb_encrypt_vec(pt: Vec<u8>, key: [u8; 16]) -> Vec<u8> {
         ct.extend(block.iter());
     }
     ct
+}
+
+pub fn aes_128_ecb_decrypt_vec(ct: Vec<u8>, key: [u8; 16]) -> Vec<u8> {
+    let mut raw_input = Vec::from(ct);
+    Aes128::new(&GenericArray::from_slice(&key))
+        .decrypt_padded::<Pkcs7>(&mut raw_input)
+        .expect("Padding error in decrypted message!")
+        .to_owned()
 }
 
 fn aes_128_cbc_encrypt_block(block: &[u8], key: &[u8], iv: &[u8]) -> [u8; 16] {

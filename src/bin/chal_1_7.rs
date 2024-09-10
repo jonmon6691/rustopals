@@ -3,9 +3,7 @@
 /// Provides a commandline utility, use --help for more info
 
 use std::{fs, io::{self, stdin, stdout, Read, Write}};
-use aes::{cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit}, Aes128};
-use cipher::block_padding::Pkcs7;
-use rustopals::raw::EverythingRemainsRaw;
+use rustopals::{blocky::aes_128_ecb_decrypt_vec, raw::EverythingRemainsRaw};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -46,31 +44,27 @@ fn main() {
     let data = io::read_to_string(source)
         .expect(&format!("Error reading from {}", args.input_file));
 
-    let mut ct = Vec::from_base64(&data);
+    let ct = Vec::from_base64(&data);
 
     let key = args.key.as_bytes();
-    assert_eq!(key.len(), 16, "Key must be 16 bytes!");
+    let key: [u8; 16] = key.try_into().expect("Key must be 16 bytes");
 
-    let pt = Aes128::new(&GenericArray::from_slice(&key))
-        .decrypt_padded::<Pkcs7>(&mut ct)
-        .expect("Padding error in decrypted message!");
+    let pt = aes_128_ecb_decrypt_vec(ct, key);
 
-    dest.write(pt).expect("Couldn't write to output file!");
+    dest.write(&pt[..]).expect("Couldn't write to output file!");
 }
 
 #[test]
 fn chal_1_7() {
     use itertools::fold;
 
-    let mut raw_input = Vec::from_base64(&fs::read_to_string("test_data/7.txt")
+    let raw_input = Vec::from_base64(&fs::read_to_string("test_data/7.txt")
         .expect("Error reading file"));
 
     let key = "YELLOW SUBMARINE".as_bytes();
+    let key: [u8; 16] = key.try_into().expect("Key must be exactly 16 bytes");
 
-    let pt = Aes128::new(&GenericArray::from_slice(&key))
-        .decrypt_padded::<Pkcs7>(&mut raw_input)
-        .expect("Padding error in decrypted message!")
-        .to_owned();
+    let pt = aes_128_ecb_decrypt_vec(raw_input, key);
 
     // Check sum
     let sum = fold(pt.iter(), 0 as usize, |a, &b| a + b as usize);
