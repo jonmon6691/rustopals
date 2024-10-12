@@ -8,6 +8,7 @@ use aes::{
     Aes128,
 };
 use itertools::{repeat_n, Itertools};
+use rand::{rngs::ThreadRng, Rng};
 use std::iter;
 
 /// Takes a Vec<u8> of data of any length, returns a vector of chunks of size k_len, with the last chunk padded using PKCS7
@@ -71,6 +72,99 @@ pub fn make_ecb_channel<'a>(
     }
 }
 
+// Returns a function that emulates an unknown ECB channel with a random length of random bytes as a prefix
+pub fn make_randoprefix_ecb_channel<'a>(
+    mut prefix_rng: ThreadRng,
+    max_prefix: usize,
+    suffix: &'a [u8],
+    key: [u8; 128 / 8],
+) -> impl FnMut(&[u8]) -> Vec<u8> + 'a {
+    move |input: &[u8]| -> Vec<u8> {
+        // Make a range of random length, then map it to random bytes.
+        let prefix =
+            (0..prefix_rng.gen_range::<usize, _>(0..max_prefix)).map(|_| prefix_rng.gen::<u8>());
+        aes_128_ecb_encrypt_vec(
+            Vec::from_iter(
+                prefix
+                    .chain(input.iter().cloned())
+                    .chain(suffix.iter().cloned()),
+            ),
+            key,
+        )
+    }
+}
+
+/// Decrypts an unknown suffix appended to user controlled input into an ECB
+/// encryption system. Can't work for prefixes because I can't control where
+/// in the block the data appears like I can for suffixes.
+pub fn crack_randoprefix_ecb_suffix(blackbox: impl FnMut(&[u8]) -> Vec<u8>) -> Option<Vec<u8>> {
+    // Determine the block size of the cipher
+    // let block_size =
+        // detect_ecb_blocksize(&blackbox, 512).expect("Couldn't determine cipher block size");
+
+    // Finds pair of repeated blocks caused by our input, this tells us when the suffix is aligned on a block boundary and where it is.
+    // TODO: This can probably be optimized by noticing when a changing block freezes, instead of waiting for 2 identical blocks to appear.
+    // let (n_pad_until_suffix_aligned, start_of_repeated_blocks) = (2 * block_size..3 * block_size)
+        // .map(|i| find_repeat_blocks(&blackbox(&Vec::from_iter(repeat_n(0x61, i))), block_size))
+        // .find_position(|trial| trial.is_some())
+        // .expect("Couldn't find duplicate blocks, are you sure this is ECB?");
+    // let start_of_repeated_blocks = start_of_repeated_blocks
+        // .expect("find_position only returns if is_some() is true, therefore this check is theoretically infallible. If you're reading this, good luck.");
+
+    // // Find out how much of the suffix is in the padding block
+    // let n_pad_until_suffix_overflow = (n_pad_until_suffix_aligned
+        // ..=n_pad_until_suffix_aligned + block_size)
+        // .map(|probe_length| blackbox(&Vec::from_iter(repeat_n(0x61, probe_length))).len())
+        // .tuple_windows()
+        // .enumerate()
+        // .filter_map(|(i, (prev, next))| if next > prev { Some(i) } else { None })
+        // .next()
+        // .expect("Cipher should have grown by one block length");
+
+    // let _len_prefix = start_of_repeated_blocks - n_pad_until_suffix_aligned;
+    // let ct_len = blackbox(&Vec::from_iter(repeat_n(0x61, n_pad_until_suffix_aligned))).len();
+    // let len_suffix = ct_len - start_of_repeated_blocks - n_pad_until_suffix_overflow - 1;
+
+    // // Break AES in ECB mode
+    // let mut pt: Vec<u8> = Vec::with_capacity(len_suffix);
+    // for i in 0..len_suffix {
+        // let block_offset = block_size * (i / block_size);
+        // // Shift in the portion of the siffix we've already cracked plus one
+        // // more byte. Then encrypt it. Then pull out the block which is all
+        // // known except for that last byte
+        // let ct_target = &blackbox(&Vec::from_iter(repeat_n(
+            // 0x61,
+            // block_offset + n_pad_until_suffix_aligned + block_size - 1 - i,
+        // )))[block_offset + start_of_repeated_blocks..][..block_size];
+        // // Loop through every possible value of the last byte and compare to
+        // // the ct_target block
+        // pt.push(
+            // (0..=255)
+                // .filter_map(|check_byte| {
+                    // let probe = Vec::from_iter(
+                        // repeat_n(
+                            // 0x61,
+                            // block_offset + n_pad_until_suffix_aligned + block_size - 1 - i,
+                        // )
+                        // .chain(pt.iter().copied())
+                        // .chain(iter::once(check_byte)),
+                    // );
+                    // if blackbox(&probe)[block_offset + start_of_repeated_blocks..][..block_size]
+                        // == *ct_target
+                    // {
+                        // Some(check_byte)
+                    // } else {
+                        // None
+                    // }
+                // })
+                // .next()
+                // .expect("There should be some byte that results in a matching block"),
+        // );
+    // }
+    // Some(pt)
+    Some(vec![])
+}
+
 /// Returns true if there are any two k_len chunks in data that are repeated
 /// Only searches chunks alinged by k_len
 pub fn detect_ecb(data: &[u8], k_len: usize) -> bool {
@@ -90,6 +184,7 @@ pub fn detect_ecb(data: &[u8], k_len: usize) -> bool {
         .count()
         > 0
 }
+
 /// Decrypts an unknown suffix appended to user controlled input into an ECB
 /// encryption system. Can't work for prefixes because I can't control where
 /// in the block the data appears like I can for suffixes.
